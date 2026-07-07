@@ -1,0 +1,168 @@
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      // "shift shift": "file_finder::Toggle"
+    },
+  },
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      // "j k": "vim::NormalBefore"
+    },
+  },
+  {
+    "context": "vim_mode == insert",
+    "bindings": {
+      "j k": "vim::NormalBefore", // jk to escape insert
+    },
+  },
+
+  {
+    "context": "vim_mode == normal && !menu",
+    "bindings": {
+      // motion helpers
+      "shift-j": ["workspace::SendKeystrokes", "5 j"],
+      "shift-k": ["workspace::SendKeystrokes", "5 k"],
+      "space j": ["workspace::SendKeystrokes", "J"],
+
+      // window/pane navigation (vim-style)
+      "ctrl-h": ["workspace::SendKeystrokes", "<C-w> h"],
+      "ctrl-j": ["workspace::SendKeystrokes", "<C-w> j"],
+      "ctrl-l": ["workspace::SendKeystrokes", "<C-w> l"],
+
+      // “leader” style mappings (use Space as leader)
+      "space .": "editor::ConfirmCodeAction", // Quick Fix (see note below)
+      "space f": "editor::Format", // Format document
+      "space t": "outline::Toggle", // Go to symbol (modal outline)
+      "space p": "command_palette::Toggle", // Command palette
+      "space w": "pane::CloseActiveItem", // Close active editor/tab
+      "space t n": "pane::ActivateNextItem", // Next tab
+      "space t p": "pane::ActivatePreviousItem", // Prev tab
+      "space t o": "pane::CloseOtherItems", // :tabo close others
+      "space /": "buffer_search::Dismiss", // Clear search UI/highlights
+      "space m": "editor::ToggleBookmark",
+      "space l": "editor::GoToPreviousBookmark",
+      "space n": "editor::GoToNextBookmark",
+
+      // diagnostics & navigation
+      "space d": "editor::GoToDefinition", // Peek/Go to definition
+
+      // line start/end helpers
+      "space e": ["workspace::SendKeystrokes", "$"],
+      "space s": ["workspace::SendKeystrokes", "^"],
+      "space r": ["workspace::SendKeystrokes", "<C-r>"],
+
+      // rough equivalents for commands that had no Zed analogue:
+      "space b": "outline_panel::ToggleFocus", // Breadcrumbs ≈ Outline panel
+    },
+  },
+
+  {
+    "context": "vim_mode == visual && !menu",
+    "bindings": {
+      ">": "editor::Indent",
+      "<": "editor::Backtab", // outdent
+      "p": ["workspace::SendKeystrokes", "p g v y"], // paste & reselect (VSCode parity)
+    },
+  },
+
+  {
+    "context": "vim_mode == operator_pending && !menu",
+    "bindings": {
+      "(": ["workspace::SendKeystrokes", "i("], // text-object helper
+    },
+  },
+
+  {
+    "context": "EmptyPane || SharedScreen",
+    "bindings": {
+      "space p": "command_palette::Toggle",
+    },
+  },
+
+  {
+    "context": "vim_mode == normal",
+    "bindings": {
+      "ctrl-a": "editor::SelectAll",
+    },
+  },
+  {
+    "context": "vim_mode == visual",
+    "bindings": {
+      "ctrl-a": "editor::SelectAll",
+    },
+  },
+  {
+    "context": "((vim_mode == normal || vim_mode == helix_normal) && !menu)",
+    "bindings": {
+      "ctrl-a": "editor::SelectAll",
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-k ctrl-c": "editor::Copy",
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-c": null,
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-k ctrl-v": "editor::Paste",
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-v": null,
+    },
+  },
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "ctrl-k b": "editor::ViewBookmarks",
+    },
+  },
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "ctrl-k ctrl-b": "workspace::CloseAllDocks",
+    },
+  },
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "ctrl-k ctrl-e": "project_panel::ToggleFocus",
+    },
+  },
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "ctrl-k ctrl-g": "git_panel::ToggleFocus",
+    },
+  },
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "ctrl-k ctrl-t": "outline_panel::ToggleFocus",
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-k ctrl-p": "editor::ToggleEditPrediction",
+    },
+  },
+]
