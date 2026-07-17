@@ -2,105 +2,80 @@
 
 Personal configuration files, managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
-Each top-level directory is a Stow **package**. Inside a package, the directory tree
-mirrors `$HOME`, so Stow can create symlinks that point from your home directory back
-into this repo. For example, `zsh/.zshrc` becomes a symlink at `~/.zshrc`.
+## Packages
 
-## Prerequisites
+| Package | Covers |
+| --- | --- |
+| `bash`  | `~/.bashrc` |
+| `nvim`  | Neovim config (`init.lua`), plugins via lazy.nvim |
+| `tmux`  | `~/.tmux.conf` |
+| `zed`   | Zed settings and keymap |
+| `zsh`   | `~/.zshrc` — oh-my-zsh, fzf, nvm, git-worktree helper functions |
 
-Install Stow, then clone this repo into `~/dotfiles`:
+## Setting up a new machine
 
-```sh
-# Debian/Ubuntu
-sudo apt install stow
-# macOS
-brew install stow
+1. **Install the programs these configs assume** (Neovim, oh-my-zsh, fzf, nvm, Go,
+   rustup, etc.) — on a fresh Debian/Ubuntu box, run:
 
-git clone <this-repo-url> ~/dotfiles
-```
+   ```sh
+   git clone <this-repo-url> ~/dotfiles
+   cd ~/dotfiles
+   ./install.sh
+   ```
 
-The repo lives directly in your home directory, so Stow's default target (the parent
-of the repo, i.e. `~`) is already correct — no `-t` flag is needed. All commands below
-are run from inside `~/dotfiles`.
+   `install.sh` is apt-based (Linux only) and safe to re-run — see the script itself
+   for exactly what it installs. Installing packages and linking dotfiles are kept as
+   separate steps; `install.sh` never calls `stow`.
+
+2. **Link the configs with Stow** (see below).
+
+Each top-level directory here is a Stow package: the directory tree inside it mirrors
+`$HOME`, so Stow symlinks files back into place (e.g. `zsh/.zshrc` → `~/.zshrc`). The
+repo lives directly in `~`, so Stow's default target is already correct — no `-t` flag
+needed, and all commands below run from `~/dotfiles`.
 
 ## Applying settings on a machine
 
-Link everything at once:
-
 ```sh
 cd ~/dotfiles
-stow zsh tmux nvim zed
+stow zsh tmux nvim zed bash    # link everything
+stow nvim                      # or just one package
 ```
 
-Or link a single package:
+- `stow -n -v zsh` — dry run with verbose output; shows what *would* be linked.
+- `stow -R nvim` — restow (unlink then relink); use after moving files within a package.
+
+**Conflicts:** if a real file already exists where Stow wants a symlink (e.g. a
+pre-existing `~/.zshrc`), Stow refuses. Either move it aside first...
 
 ```sh
-stow nvim
+mv ~/.zshrc ~/.zshrc.bak && stow zsh
 ```
 
-Useful flags:
-
-- `stow -n -v zsh` — dry run (`-n`) with verbose output (`-v`); shows what *would*
-  be linked without touching anything. Run this first when unsure.
-- `stow -R nvim` — restow (unlink then relink); use after adding or moving files
-  within a package.
-
-**Conflicts:** if a real file already exists where Stow wants to create a symlink
-(e.g. a pre-existing `~/.zshrc`), Stow refuses and reports the conflict. Either back
-up and remove the existing file first:
+...or pull its contents into the repo with `--adopt` (this **overwrites** the repo's
+copy with the real file's contents — review with `git diff` after):
 
 ```sh
-mv ~/.zshrc ~/.zshrc.bak
-stow zsh
-```
-
-…or, if you want the existing file's contents to become the tracked version, use
-`--adopt` (this **moves** the real file into the repo, overwriting the repo's copy —
-review with `git diff` afterward):
-
-```sh
-stow --adopt zsh
-git diff        # inspect what --adopt pulled in
+stow --adopt zsh && git diff
 ```
 
 ## Adding a new config to the repo
 
-To start tracking a config file, recreate its `$HOME`-relative path inside a new
-package directory, move the real file in, then let Stow link it back.
-
-General steps for a file at `~/<path>`:
-
-1. `mkdir -p ~/dotfiles/<pkg>/<dir-of-path>`
-2. `mv ~/<path> ~/dotfiles/<pkg>/<path>`
-3. `cd ~/dotfiles && stow <pkg>` — recreates the symlink at `~/<path>`.
-4. `git add <pkg> && git commit -m "feat: add <pkg> config"`
-
-### Worked example: tracking `~/.gitconfig`
+Recreate the file's `$HOME`-relative path inside a package directory, move the real
+file in, then let Stow link it back:
 
 ```sh
 cd ~/dotfiles
-mkdir -p git                       # new package, top level of the file is ~/.gitconfig
-mv ~/.gitconfig git/.gitconfig     # move the real file into the package
-stow git                           # ~/.gitconfig is now a symlink into the repo
-git add git && git commit -m "feat: add git config"
-```
-
-### Worked example: tracking `~/.config/foo/config.toml`
-
-The package tree must mirror the full path under `$HOME`:
-
-```sh
-cd ~/dotfiles
-mkdir -p foo/.config/foo
-mv ~/.config/foo/config.toml foo/.config/foo/config.toml
-stow foo
+mkdir -p foo/.config/foo                        # mirrors ~/.config/foo
+mv ~/.config/foo/config.toml foo/.config/foo/    # move the real file into the package
+stow foo                                        # symlinks it back to ~/.config/foo/config.toml
 git add foo && git commit -m "feat: add foo config"
 ```
 
 ## Updating and removing
 
-- Edit a config normally — because it's a symlink into the repo, changes land here
+- Edit a config normally — it's a symlink into the repo, so changes land here
   automatically. Commit them with git.
 - `stow -R <pkg>` — restow after adding/moving files within a package.
-- `stow -D <pkg>` — unlink (delete) a package's symlinks from your home directory.
-  The files remain safely in the repo.
+- `stow -D <pkg>` — unlink a package's symlinks from your home directory (files stay
+  safely in the repo).
