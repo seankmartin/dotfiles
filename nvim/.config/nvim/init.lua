@@ -1,4 +1,6 @@
--- Enable Vim-style behavior is already Neovim default.
+-- Use Space as leader
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
 
 -- Basics
 vim.opt.number = true
@@ -38,10 +40,6 @@ vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to lower window" })
 vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to upper window" })
 vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
 
--- Use Space as leader
-vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
-
 -- Leader mappings
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { desc = "Format document" })
 vim.keymap.set("n", "<leader>d", vim.lsp.buf.definition, { desc = "Go to definition" })
@@ -54,7 +52,6 @@ vim.keymap.set("n", "<leader>r", "<C-r>", { desc = "Redo" })
 -- Buffers
 vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
-vim.keymap.set("n", "<leader>bb", ":FzfLua buffers<CR>", { desc = "Find buffers" })
 vim.keymap.set("n", "<leader>bd", ":bd<CR>", { desc = "Delete buffer" })
 vim.keymap.set("n", "<leader>be", ":enew<CR>", { desc = "New empty buffer" })
 
@@ -63,7 +60,6 @@ vim.keymap.set("n", "<leader>/", ":nohlsearch<CR>", { desc = "Clear search highl
 
 -- Marks as rough bookmark equivalent
 vim.keymap.set("n", "<leader>m", "mM", { desc = "Set mark M" })
-vim.keymap.set("n", "<leader>l", "'M", { desc = "Go to mark M" })
 vim.keymap.set("n", "<leader>n", "'M", { desc = "Go to mark M" })
 
 -- Select all
@@ -79,13 +75,22 @@ vim.keymap.set("v", "p", "pgvy", { desc = "Paste and reselect" })
 -- Text object helper: make d( behave like di(
 vim.keymap.set("o", "(", "i(", { desc = "Inside parentheses" })
 
--- Copy/paste alternatives
-vim.keymap.set({ "n", "v" }, "<C-k><C-c>", '"+y', { desc = "Copy to system clipboard" })
-vim.keymap.set({ "n", "v" }, "<C-k><C-v>", '"+p', { desc = "Paste from system clipboard" })
-
 -- Disable Ctrl-c / Ctrl-v in editor modes if you want Vim behavior
 vim.keymap.set({ "n", "i", "v" }, "<C-c>", "<Nop>")
 vim.keymap.set({ "n", "i", "v" }, "<C-v>", "<Nop>")
+
+-- LSP services
+vim.keymap.set("n", "<leader>h", vim.lsp.buf.hover, {
+  desc = "LSP hover",
+})
+
+vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, {
+  desc = "Rename symbol",
+})
+
+vim.keymap.set("n", "<leader>fr", vim.lsp.buf.references, {
+  desc = "Find references",
+})
 
 -- Plugins --
 
@@ -135,8 +140,18 @@ require("lazy").setup({
 
   {
     "nvim-mini/mini.surround",
-    version = false, -- always use latest
-    opts = {},
+    version = false,
+    opts = {
+      mappings = {
+        add = "<leader>sa",
+        delete = "<leader>sd",
+        find = "<leader>sf",
+        find_left = "<leader>sF",
+        highlight = "<leader>sh",
+        replace = "<leader>sr",
+        update_n_lines = "<leader>sn",
+      },
+    },
   },
 
   {
@@ -163,6 +178,17 @@ require("lazy").setup({
         function() require("fzf-lua").help_tags() end,
         desc = "Help tags",
       },
+    },
+  },
+
+  {
+    "kdheepak/lazygit.nvim",
+    cmd = "LazyGit",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    keys = {
+      { "<leader>gg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
     },
   },
 

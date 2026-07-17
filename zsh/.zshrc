@@ -1,4 +1,6 @@
 # If you come from bash you might have to change your $PATH.
+# Neovim
+export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
 export PATH=$HOME/.local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
@@ -113,9 +115,6 @@ fpath+=${ZDOTDIR:-~}/.zsh_functions
 # ZSH FZF - fuzzy finder
 source /usr/share/doc/fzf/examples/key-bindings.zsh
 source /usr/share/doc/fzf/examples/completion.zsh
-
-# Neovim
-export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
 # TMUX and git worktrees
 # Usage:
@@ -278,3 +277,7 @@ alias wl='git worktree list'
 
 # For razer-setup
 export PATH="$HOME/.pixi/bin:$PATH"
+
+# Go setup
+export PATH=$PATH:/usr/local/go/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
