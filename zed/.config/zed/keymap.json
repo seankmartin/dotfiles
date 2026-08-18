@@ -165,4 +165,10 @@
       "ctrl-k ctrl-p": "editor::ToggleEditPrediction",
     },
   },
+  {
+    "context": "!Terminal",
+    "unbind": {
+      "ctrl-shift-c": "collab_panel::ToggleFocus"
+    }
+  }
 ]

@@ -1,0 +1,30 @@
+[include]
+  path = ~/.gitconfig.local
+[alias]
+	last = log -1 HEAD
+	unstage = reset HEAD --
+	tree = log --graph --decorate --oneline
+	collapse-tree = log --graph --decorate --oneline --all --simplify-by-decoration
+	st = status
+	ck = checkout
+	br = branch
+	subup = submodule update --recursive
+	rm-prune = remote prune origin
+	undo = reset --soft HEAD~1
+	show-cfg = config --global -l
+	aliases = config --get-regexp alias
+	co = checkout
+	cb = checkout -b
+[init]
+	defaultBranch = main
+[core]
+	editor = nvim
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+[pull]
+	ff = true
+[push]
+	autoSetupRemote = true
