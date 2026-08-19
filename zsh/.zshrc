@@ -197,8 +197,15 @@ _wt_ensure_worktree() {
     echo '.tmux-name' >> "$exclude"
   fi
 
+  # CLAUDE.md is tracked in ~/Trusted/claude-md and stowed into the clone, so
+  # link rather than copy - every worktree then shares the one canonical file
+  # instead of accumulating copies that drift. Exclude it locally for the same
+  # reason as .tmux-name above.
   if [ -f "$root/CLAUDE.md" ]; then
-    cp "$root/CLAUDE.md" "$dir/CLAUDE.md"
+    ln -sfn "$root/CLAUDE.md" "$dir/CLAUDE.md"
+    if [ -n "$exclude" ] && ! grep -qxF 'CLAUDE.md' "$exclude" 2>/dev/null; then
+      echo 'CLAUDE.md' >> "$exclude"
+    fi
   fi
 
   if [ -n "$friendly" ]; then
