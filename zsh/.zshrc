@@ -186,6 +186,17 @@ _wt_ensure_worktree() {
     git worktree add -b "$branch" "$dir"
   fi
 
+  # .tmux-name below is our own bookkeeping, not part of the project. Exclude
+  # it locally so it stays out of `git status` and, more importantly, so it
+  # doesn't leave the worktree permanently untracked-dirty - which makes
+  # `git worktree remove` (and so wr) refuse to delete it without --force.
+  local exclude
+  exclude="$(git -C "$dir" rev-parse --git-path info/exclude 2>/dev/null)"
+  if [ -n "$exclude" ] && ! grep -qxF '.tmux-name' "$exclude" 2>/dev/null; then
+    mkdir -p "$(dirname "$exclude")"
+    echo '.tmux-name' >> "$exclude"
+  fi
+
   if [ -f "$root/CLAUDE.md" ]; then
     cp "$root/CLAUDE.md" "$dir/CLAUDE.md"
   fi
@@ -280,14 +291,29 @@ wr() {
   [ "$1" = "-f" ] && force="--force" && shift
 
   local branch="$1"
-  local root="$(git rev-parse --show-toplevel)"
-  local base="$(basename "$root")"
-  local safe="${branch//\//-}"
-  local dir="../${base}-${safe}"
 
-  git worktree remove $force "$dir"
+  if [ -z "$branch" ]; then
+    echo "Usage: wr [-f] <branch>"
+    return 1
+  fi
+
+  # Resolve through _wt_info, same as wt/ww: it builds an absolute dir from
+  # $root (not a cwd-relative ../) and honours .tmux-name. Must run before the
+  # worktree is removed - .tmux-name lives inside it.
+  local info root base safe dir
+  info="$(_wt_info "$branch")" || return 1
+  IFS="|" read -r root base safe dir <<< "$info"
+
+  git worktree remove $force "$dir" || return 1
   git branch -d "$branch" 2>/dev/null
-  [ -n "$TMUX" ] && tmux kill-window -t "$safe" 2>/dev/null
+
+  # wt creates three windows per worktree; kill all of them, not just "$safe".
+  if [ -n "$TMUX" ]; then
+    local suffix
+    for suffix in agent edit run; do
+      tmux kill-window -t "${safe}-${suffix}" 2>/dev/null
+    done
+  fi
 }
 
 alias wl='git worktree list'
