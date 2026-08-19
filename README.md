@@ -7,11 +7,16 @@ Personal configuration files, managed with [GNU Stow](https://www.gnu.org/softwa
 | Package | Covers |
 | --- | --- |
 | `bash`  | `~/.bashrc` (Linux only - see below) |
-| `git`   | `~/.gitconfig` - aliases, LFS filters; identity lives in `~/.gitconfig.local` |
+| `git`   | `~/.gitconfig` - aliases, LFS filters; identity lives in `~/.gitconfig.local`. Also `~/.config/git/ignore`, the global excludes file |
 | `nvim`  | Neovim config (`init.lua`), plugins via lazy.nvim |
 | `tmux`  | `~/.tmux.conf` |
 | `zed`   | Zed settings and keymap |
 | `zsh`   | `~/.zshrc` — oh-my-zsh, fzf, nvm, git-worktree helper functions |
+
+`git/.config/git/ignore` ignores `CLAUDE.md` in **every** repo on the machine, so
+that the symlinks stowed by [`~/Trusted/claude-md`](../Trusted/claude-md) stay out
+of each host repo's `git status`. A project that genuinely wants to commit its own
+`CLAUDE.md` needs `git add -f`, or a `!CLAUDE.md` line in its own `.gitignore`.
 
 ## Setting up a new machine
 
