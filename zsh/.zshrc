@@ -1,6 +1,17 @@
 # If you come from bash you might have to change your $PATH.
-# Neovim
-export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
+
+# Homebrew (macOS). ~/.zprofile only covers login shells, so set it here too;
+# the guards make this a no-op on Linux.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# Neovim - on Linux install.sh untars the release into /opt; on macOS
+# Homebrew has already put nvim on PATH.
+[[ "$OSTYPE" == linux* ]] && export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
+
 export PATH=$HOME/.local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
@@ -113,9 +124,14 @@ fpath+=${ZDOTDIR:-~}/.zsh_functions
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# ZSH FZF - fuzzy finder
-source /usr/share/doc/fzf/examples/key-bindings.zsh
-source /usr/share/doc/fzf/examples/completion.zsh
+# ZSH FZF - fuzzy finder. `fzf --zsh` (fzf >= 0.48) is the portable way to get
+# key bindings + completion; fall back to Debian's packaged copies otherwise.
+if command -v fzf >/dev/null 2>&1 && fzf --zsh >/dev/null 2>&1; then
+  eval "$(fzf --zsh)"
+else
+  [ -f /usr/share/doc/fzf/examples/key-bindings.zsh ] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+  [ -f /usr/share/doc/fzf/examples/completion.zsh ] && source /usr/share/doc/fzf/examples/completion.zsh
+fi
 
 # TMUX and git worktrees
 # Usage:
@@ -279,6 +295,11 @@ alias wl='git worktree list'
 # For razer-setup
 export PATH="$HOME/.pixi/bin:$PATH"
 
-# Go setup
-export PATH=$PATH:/usr/local/go/bin
-export PATH="$PATH:$(go env GOPATH)/bin"
+# Go setup. /usr/local/go is where install.sh untars the Linux tarball;
+# Homebrew's go is already on PATH via brew shellenv.
+[[ "$OSTYPE" == linux* ]] && export PATH=$PATH:/usr/local/go/bin
+command -v go >/dev/null 2>&1 && export PATH="$PATH:$(go env GOPATH)/bin"
+
+# Machine-local overrides, deliberately kept out of the repo - the zsh
+# counterpart to ~/.gitconfig.local.
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local
