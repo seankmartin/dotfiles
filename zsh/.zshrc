@@ -1,6 +1,17 @@
 # If you come from bash you might have to change your $PATH.
-# Neovim
-export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
+
+# Homebrew (macOS). ~/.zprofile only covers login shells, so set it here too;
+# the guards make this a no-op on Linux.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# Neovim - on Linux install.sh untars the release into /opt; on macOS
+# Homebrew has already put nvim on PATH.
+[[ "$OSTYPE" == linux* ]] && export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
+
 export PATH=$HOME/.local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
@@ -113,9 +124,14 @@ fpath+=${ZDOTDIR:-~}/.zsh_functions
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# ZSH FZF - fuzzy finder
-source /usr/share/doc/fzf/examples/key-bindings.zsh
-source /usr/share/doc/fzf/examples/completion.zsh
+# ZSH FZF - fuzzy finder. `fzf --zsh` (fzf >= 0.48) is the portable way to get
+# key bindings + completion; fall back to Debian's packaged copies otherwise.
+if command -v fzf >/dev/null 2>&1 && fzf --zsh >/dev/null 2>&1; then
+  eval "$(fzf --zsh)"
+else
+  [ -f /usr/share/doc/fzf/examples/key-bindings.zsh ] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+  [ -f /usr/share/doc/fzf/examples/completion.zsh ] && source /usr/share/doc/fzf/examples/completion.zsh
+fi
 
 # TMUX and git worktrees
 # Usage:
@@ -168,6 +184,17 @@ _wt_ensure_worktree() {
     git worktree add -b "$branch" "$dir" "origin/$branch"
   else
     git worktree add -b "$branch" "$dir"
+  fi
+
+  # .tmux-name below is our own bookkeeping, not part of the project. Exclude
+  # it locally so it stays out of `git status` and, more importantly, so it
+  # doesn't leave the worktree permanently untracked-dirty - which makes
+  # `git worktree remove` (and so wr) refuse to delete it without --force.
+  local exclude
+  exclude="$(git -C "$dir" rev-parse --git-path info/exclude 2>/dev/null)"
+  if [ -n "$exclude" ] && ! grep -qxF '.tmux-name' "$exclude" 2>/dev/null; then
+    mkdir -p "$(dirname "$exclude")"
+    echo '.tmux-name' >> "$exclude"
   fi
 
   if [ -f "$root/CLAUDE.md" ]; then
@@ -264,14 +291,29 @@ wr() {
   [ "$1" = "-f" ] && force="--force" && shift
 
   local branch="$1"
-  local root="$(git rev-parse --show-toplevel)"
-  local base="$(basename "$root")"
-  local safe="${branch//\//-}"
-  local dir="../${base}-${safe}"
 
-  git worktree remove $force "$dir"
+  if [ -z "$branch" ]; then
+    echo "Usage: wr [-f] <branch>"
+    return 1
+  fi
+
+  # Resolve through _wt_info, same as wt/ww: it builds an absolute dir from
+  # $root (not a cwd-relative ../) and honours .tmux-name. Must run before the
+  # worktree is removed - .tmux-name lives inside it.
+  local info root base safe dir
+  info="$(_wt_info "$branch")" || return 1
+  IFS="|" read -r root base safe dir <<< "$info"
+
+  git worktree remove $force "$dir" || return 1
   git branch -d "$branch" 2>/dev/null
-  [ -n "$TMUX" ] && tmux kill-window -t "$safe" 2>/dev/null
+
+  # wt creates three windows per worktree; kill all of them, not just "$safe".
+  if [ -n "$TMUX" ]; then
+    local suffix
+    for suffix in agent edit run; do
+      tmux kill-window -t "${safe}-${suffix}" 2>/dev/null
+    done
+  fi
 }
 
 alias wl='git worktree list'
@@ -279,6 +321,11 @@ alias wl='git worktree list'
 # For razer-setup
 export PATH="$HOME/.pixi/bin:$PATH"
 
-# Go setup
-export PATH=$PATH:/usr/local/go/bin
-export PATH="$PATH:$(go env GOPATH)/bin"
+# Go setup. /usr/local/go is where install.sh untars the Linux tarball;
+# Homebrew's go is already on PATH via brew shellenv.
+[[ "$OSTYPE" == linux* ]] && export PATH=$PATH:/usr/local/go/bin
+command -v go >/dev/null 2>&1 && export PATH="$PATH:$(go env GOPATH)/bin"
+
+# Machine-local overrides, deliberately kept out of the repo - the zsh
+# counterpart to ~/.gitconfig.local.
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local

@@ -6,7 +6,8 @@ Personal configuration files, managed with [GNU Stow](https://www.gnu.org/softwa
 
 | Package | Covers |
 | --- | --- |
-| `bash`  | `~/.bashrc` |
+| `bash`  | `~/.bashrc` (Linux only - see below) |
+| `git`   | `~/.gitconfig` - aliases, LFS filters; identity lives in `~/.gitconfig.local` |
 | `nvim`  | Neovim config (`init.lua`), plugins via lazy.nvim |
 | `tmux`  | `~/.tmux.conf` |
 | `zed`   | Zed settings and keymap |
@@ -14,20 +15,41 @@ Personal configuration files, managed with [GNU Stow](https://www.gnu.org/softwa
 
 ## Setting up a new machine
 
-1. **Install the programs these configs assume** (Neovim, oh-my-zsh, fzf, nvm, Go,
-   rustup, etc.) — on a fresh Debian/Ubuntu box, run:
+1. **Install the programs these configs assume** (Neovim, oh-my-zsh, fzf, ripgrep,
+   lazygit, nvm, Go, etc.):
 
    ```sh
    git clone <this-repo-url> ~/dotfiles
    cd ~/dotfiles
-   ./install.sh
+   ./install.sh          # Debian/Ubuntu - apt
+   ./install-macos.sh    # macOS - Homebrew
    ```
 
-   `install.sh` is apt-based (Linux only) and safe to re-run — see the script itself
-   for exactly what it installs. Installing packages and linking dotfiles are kept as
-   separate steps; `install.sh` never calls `stow`.
+   Both scripts are safe to re-run and skip anything already installed — see the
+   scripts themselves for exactly what they install. Installing packages and linking
+   dotfiles are kept as separate steps; neither script ever calls `stow`.
 
-2. **Link the configs with Stow** (see below).
+   `install-macos.sh` is deliberately narrower than `install.sh`: no LaTeX, DBeaver,
+   ffmpeg, rustup or pixi, and none of the X11/KDE tools (`xdotool`, `flameshot`,
+   `k4dirstat`, `meld`, `openssh-server`) that have no macOS equivalent. It will tell
+   you if the Xcode command line tools are missing, but you have to run
+   `xcode-select --install` yourself — it opens a GUI dialog.
+
+2. **Create the per-machine files** (both are intentionally untracked, so secrets and
+   machine-specific paths never land in the repo):
+
+   - `~/.gitconfig.local` — your identity. Without it you have no commit author:
+
+     ```ini
+     [user]
+     	name = Your Name
+     	email = you@example.com
+     ```
+
+   - `~/.zshrc.local` — anything only this machine needs (conda init, `PNPM_HOME`,
+     work-specific paths). Sourced from the end of `~/.zshrc` if present.
+
+3. **Link the configs with Stow** (see below).
 
 Each top-level directory here is a Stow package: the directory tree inside it mirrors
 `$HOME`, so Stow symlinks files back into place (e.g. `zsh/.zshrc` → `~/.zshrc`). The
@@ -38,9 +60,14 @@ needed, and all commands below run from `~/dotfiles`.
 
 ```sh
 cd ~/dotfiles
-stow zsh tmux nvim zed bash    # link everything
-stow nvim                      # or just one package
+stow zsh tmux nvim zed git bash    # Linux - everything
+stow zsh tmux nvim zed git         # macOS - everything except bash
+stow nvim                          # or just one package
 ```
+
+**`bash` on macOS:** don't stow it. `bash/.bashrc` is the stock Debian skeleton
+(`debian_chroot`, `lesspipe`, `dircolors`, `notify-send`), macOS ships bash 3.2 and
+doesn't source `~/.bashrc` for login shells anyway.
 
 - `stow -n -v zsh` — dry run with verbose output; shows what *would* be linked.
 - `stow -R nvim` — restow (unlink then relink); use after moving files within a package.
