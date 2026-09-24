@@ -1,0 +1,15 @@
+#!/bin/sh
+# Marks the tmux window of this Claude Code session as waiting for input.
+[ -n "$TMUX_PANE" ] || exit 0
+# TEMPORARY: event log to debug when the flag is set.
+jq -c --arg action "$1" --arg pane "$TMUX_PANE" \
+  '{time: (now | strflocaltime("%H:%M:%S")), action: $action, pane: $pane, event: .hook_event_name, tool: .tool_name, notification: .notification_type}' \
+  >> "$HOME/.cache/tmux-agent-flag.log" 2>/dev/null
+case "$1" in
+  set)
+    [ "$(tmux display -p -t "$TMUX_PANE" '#{&&:#{window_active},#{session_attached}}')" = 1 ] && exit 0
+    tmux set -w -t "$TMUX_PANE" @agent waiting
+    ;;
+  clear) tmux set -uw -t "$TMUX_PANE" @agent ;;
+  *) echo "usage: tmux-agent-flag set|clear" >&2; exit 1 ;;
+esac
