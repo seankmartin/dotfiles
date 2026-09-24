@@ -7,6 +7,7 @@ Personal configuration files, managed with [GNU Stow](https://www.gnu.org/softwa
 | Package | Covers |
 | --- | --- |
 | `bash`  | `~/.bashrc` (Linux only - see below) |
+| `bin`   | `~/.local/bin` scripts - `tmux-agent-flag`, which Claude Code hooks call to mark a waiting agent window |
 | `git`   | `~/.gitconfig` - aliases, LFS filters; identity lives in `~/.gitconfig.local`. Also `~/.config/git/ignore`, the global excludes file |
 | `nvim`  | Neovim config (`init.lua`), plugins via lazy.nvim |
 | `tmux`  | `~/.tmux.conf` |

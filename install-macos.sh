@@ -85,7 +85,7 @@ install_homebrew() {
 install_core_cli() {
   brew install \
     git git-lfs gh stow tmux zsh wget jq cmake make \
-    fzf ripgrep lazygit neovim
+    fzf ripgrep lazygit neovim git-delta difftastic
 }
 
 # ---------------------------------------------------------------------------

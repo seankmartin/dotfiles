@@ -29,7 +29,7 @@ run_section() {
 
 # Make binaries installed by this script visible to later sections in the
 # same run, without waiting for a fresh shell.
-export PATH="/usr/local/go/bin:$HOME/.cargo/bin:$HOME/.local/bin:$HOME/go/bin:$PATH"
+export PATH="/usr/local/go/bin:$HOME/.cargo/bin:$HOME/.local/bin:$HOME/go/bin:$HOME/.pixi/bin:$PATH"
 
 # ---------------------------------------------------------------------------
 # apt setup
@@ -181,6 +181,11 @@ install_lazygit() {
   go install github.com/jesseduffield/lazygit@latest
 }
 
+# apt has no difftastic, and git-delta only from Debian trixie / Ubuntu noble.
+install_diff_tools() {
+  pixi global install git-delta difftastic
+}
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -200,6 +205,7 @@ main() {
   run_section "pixi"              install_pixi
   run_section "uv"                install_uv
   run_section "lazygit"           install_lazygit
+  run_section "delta + difftastic" install_diff_tools
 
   log "Done."
   echo "Next: cd ~/dotfiles && stow zsh tmux nvim zed bash   (see README.md)"

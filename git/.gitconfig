@@ -15,10 +15,23 @@
 	aliases = config --get-regexp alias
 	co = checkout
 	cb = checkout -b
+	dft = difftool
 [init]
 	defaultBranch = main
 [core]
 	editor = nvim
+	pager = delta
+[delta]
+	navigate = true
+	side-by-side = true
+[diff]
+	tool = difftastic
+[difftool]
+	prompt = false
+[difftool "difftastic"]
+	cmd = difft "$LOCAL" "$REMOTE"
+[pager]
+	difftool = true
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process

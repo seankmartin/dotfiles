@@ -30,7 +30,7 @@
     "claude-acp": {
       "default_config_options": {
         "fast": false,
-        "model": "sonnet",
+        "model": "default",
         "effort": "default",
         "mode": "auto"
       },

@@ -252,7 +252,7 @@ wt() {
   IFS="|" read -r root base safe dir <<< "$info"
 
   if [ -n "$TMUX" ]; then
-    _tmux_new_worktree_window "${safe}-agent" "$dir" "exec \$SHELL"
+    _tmux_new_worktree_window "${safe}-agent" "$dir" "claude; exec \$SHELL"
     _tmux_new_worktree_window "${safe}-edit" "$dir" "nvim ."
     _tmux_new_worktree_window "${safe}-run" "$dir" "exec \$SHELL"
 
